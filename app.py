@@ -2,6 +2,7 @@ import streamlit as st
 import docx2txt
 import PyPDF2
 import io
+import random
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import pipeline
@@ -42,14 +43,23 @@ def extract_candidate_name(resume_text):
     return "Unknown"
 
 def get_free_summary(job_desc, resume_text):
+    # Add a variable instruction for uniqueness
+    instructions = [
+        "Highlight the most unique skills that match.",
+        "Focus on the candidate's most relevant experience.",
+        "Point out one strength and one area for improvement.",
+        "Emphasize differences from the job description."
+    ]
+    extra = random.choice(instructions)
     prompt = (
         f"Given this job description: {job_desc}\n"
         f"And this candidate resume: {resume_text}\n"
-        "Briefly summarize why or why not this candidate fits the job."
+        f"{extra}\n"
+        "Based on the above, analyze and explain in 2-3 lines whether this candidate is a good fit for the job, without copying the job description."
     )
-    # Truncate input to fit summarizer limits
+    # Truncate input to summarizer limits
     input_text = prompt[:1024]
-    summary = summarizer(input_text, max_length=60, min_length=20, do_sample=False)
+    summary = summarizer(input_text, max_length=60, min_length=20, do_sample=True)
     return summary[0]['summary_text']
 
 st.markdown(
